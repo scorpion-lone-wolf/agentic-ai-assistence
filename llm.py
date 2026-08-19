@@ -30,7 +30,7 @@ def call_llm(messages, tools=None):
     """
 
     response = client.chat.completions.create(
-        model="gemini-3.6-flash",
+        model="gemini-3.7-flash",
         messages=messages,
         tools=tools,
     )
