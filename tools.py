@@ -1,4 +1,5 @@
 # function
+import arxiv
 from ddgs import DDGS
 
 
@@ -17,7 +18,7 @@ def get_current_temperature(city: str) -> str:
     return temperatures.get(city.lower(), f"No temperature data available for {city}")
 
 
-def search_web(query: str, max_results: int = 5):
+def search_web(query: str, max_results: int = 2):
     """
     Search the web for the given query and return the top max_results
     It returns a list of array of results and each result contains
@@ -42,6 +43,39 @@ def search_web(query: str, max_results: int = 5):
         return "No web search results found."
 
     return "\n\n".join(formatted_results)
+
+
+def search_arxiv(query: str, max_results: int = 2):
+    """
+    Search query in arxiv and return the top 5 max_results
+    """
+    client = arxiv.Client()
+    results = arxiv.Search(
+        query=query, max_results=max_results, sort_by=arxiv.SortCriterion.SubmittedDate
+    )
+
+    papers = []
+
+    for index, paper in enumerate(client.results(results), start=1):
+        title = paper.title
+        url = paper.entry_id
+        description = paper.summary
+        published = paper.published
+        authors = ", ".join(author.name for author in paper.authors)
+
+        papers.append(f"""
+            Result {index}
+            title : {title}
+            url : {url}
+            published : {published}
+            description : {description}
+            authors : {authors}
+        """.strip())
+
+    if not papers:
+        return "No arxiv search results found."
+
+    return "\n\n".join(papers)
 
 
 # =========================================================================
@@ -89,6 +123,30 @@ tool_schemas = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_arxiv",
+            "description": (
+                "Using this when you need to search the archive for academic research papers to answer a question or provide information to a user"
+                "Search the archive for the given query which return the top max_results(default to 5) in form of string separated by two new line"
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The query topic to search",
+                    },
+                    "max_results": {
+                        "type": "number",
+                        "description": "number of results to return",
+                    },
+                },
+                "required": ["query"],
+            },
+        },
+    },
 ]
 
 # ==========================================================
@@ -97,4 +155,5 @@ tool_schemas = [
 tool_registry = {
     "get_current_temperature": get_current_temperature,
     "search_web": search_web,
+    "search_arxiv": search_arxiv,
 }

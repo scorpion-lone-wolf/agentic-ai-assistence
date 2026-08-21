@@ -23,6 +23,8 @@ def run_agent_loop(user_message: str) -> str:
             "content": (
                 "You are a helpful assistant."
                 "Use available tools when needed"
+                "Use search_archive tool when user ask for academic research papers, scientific studies, research literatures etc"
+                "Use search_web tool when user ask for general information about a topic or you think that not related to academic research papers"
                 "Hard Rule to follow : The Final Output should not be more then 100 words"
             ),
         },
