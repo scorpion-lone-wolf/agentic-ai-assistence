@@ -55,10 +55,15 @@ def run_agent_loop(user_message: str) -> str:
             "role": "system",
             "content": (
                 "You are a helpful assistant."
-                "Use available tools when needed"
+                "You may use Multiple tools when needed"
                 "Use search_archive tool when user ask for academic research papers, scientific studies, research literatures etc"
                 "Use search_web tool when user ask for general information about a topic or you think that not related to academic research papers"
-                "You may use Multiple tools when needed"
+                "While using tools if you encounter an error, you can try other tools if they are relevant else clearly response to the user that"
+                "you encountered an error while accessing tools so you can fulfill the request"
+                "Hard Rule You Should Follow"
+                "1. Always use tools when needed"
+                "2. Always use tools when you think that they are relevant"
+                "3. If user ask for latest result and tool calls fails don;t response with old data or data that is not recent from your knowledge base"
             ),
         },
         {
