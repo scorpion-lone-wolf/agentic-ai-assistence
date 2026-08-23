@@ -3,7 +3,7 @@ from pydantic import Field
 from pydantic import BaseModel
 
 
-class TempeartureArgs(BaseModel):
+class TemperatureArgs(BaseModel):
     # this means if any other field is passed ,this validator will raise error
     model_config = ConfigDict(extra="forbid")
 

@@ -1,4 +1,7 @@
 # function
+from tool_model import ArxivSearchArgs
+from tool_model import WebSearchArgs
+from tool_model import TemperatureArgs
 import arxiv
 from ddgs import DDGS
 
@@ -153,7 +156,16 @@ tool_schemas = [
 # Tool registry used by OUR Python program
 # ==========================================================
 tool_registry = {
-    "get_current_temperature": get_current_temperature,
-    "search_web": search_web,
-    "search_arxiv": search_arxiv,
+    "get_current_temperature": {
+        "function": get_current_temperature,
+        "args_model": TemperatureArgs,  # this is the model that validates the arguments of the function passed by our LLM
+    },
+    "search_web": {
+        "function": search_web,
+        "args_model": WebSearchArgs,  # this is the model that validates the arguments of the function passed by our LLM
+    },
+    "search_arxiv": {
+        "function": search_arxiv,
+        "args_model": ArxivSearchArgs,  # this is the model that validates the arguments of the function passed by our LLM
+    },
 }
