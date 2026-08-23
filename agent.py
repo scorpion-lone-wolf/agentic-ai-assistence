@@ -15,24 +15,39 @@ def execute_tool_call(tool_call) -> str:
     function_name = tool_call.function.name
     # parse arguments
     try:
-        arguments = json.loads(tool_call.function.arguments)
+        raw_arguments = json.loads(
+            tool_call.function.arguments
+        )  # raw arguments passed by the LLM
     except json.JSONDecodeError as e:
         return f"Tool ${function_name} can't be executed \n because of error in parsing arguments: {e}"
 
     print(f"\nTool requested: {function_name}")
-    print(f"Arguments: {arguments}")
+    print(f"Arguments: {raw_arguments}")
 
     # find the actual tool to call
-    tool_function = tool_registry.get(function_name)
+    tool = tool_registry.get(function_name)
 
-    if tool_function is None:
+    if tool is None:
         tool_result = f"Unknown tool: {function_name}"
-    else:
-        try:
-            # Execute function using supplied arguments
-            tool_result = tool_function(**arguments)
-        except Exception as e:
-            return f"Tool ${function_name} can't be executed \n because of error: {e}"
+
+    tool_function = tool["function"]
+    args_model = tool["args_model"]  # this is the validation model for arguments
+
+    # --------------------------
+    #  argument validation
+    # -------------------------
+    try:
+        validated_arguments = args_model.model_validate(raw_arguments)
+    except Exception as e:
+        return f"Tool {function_name} can't be executed \n because of error in validating arguments: {e}"
+
+    # --------------------------
+    #  tool execution
+    # -------------------------
+    try:
+        tool_result = tool_function(**dict(validated_arguments))
+    except Exception as e:
+        return f"Tool {function_name} can't be executed \n because of error in executing tool: {e}"
 
     return str(tool_result)
 
