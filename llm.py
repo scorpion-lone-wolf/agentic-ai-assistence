@@ -38,7 +38,7 @@ def call_llm(messages, tools=None):
     for attempt in range(MAX_LLM_RETRY + 1):
         try:
             response = client.chat.completions.create(
-                model="gemini-3.1-flash-lite-test",
+                model="gemini-3.1-flash-lite",
                 messages=messages,
                 tools=tools,
             )
