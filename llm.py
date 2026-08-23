@@ -42,6 +42,7 @@ def call_llm(messages, tools=None):
                 messages=messages,
                 tools=tools,
             )
+            return response.choices[0].message
         except openai.APITimeoutError as error:
             print(f"[LLM Error] : Timeout error: {error}")
             should_retry = True
@@ -68,4 +69,3 @@ def call_llm(messages, tools=None):
         print(f"[LLM Error] : Retrying after {delay} seconds...")
 
         time.sleep(delay)
-    return response.choices[0].message

@@ -30,8 +30,8 @@ def execute_tool_call(tool_call) -> str:
     if tool is None:
         tool_result = f"Unknown tool: {function_name}"
 
-    tool_function = tool["function"]
-    args_model = tool["args_model"]  # this is the validation model for arguments
+    tool_function = tool.function
+    args_model = tool.args_model  # this is the validation model for arguments
 
     # --------------------------
     #  argument validation
