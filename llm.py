@@ -69,3 +69,11 @@ def call_llm(messages, tools=None):
         print(f"[LLM Error] : Retrying after {delay} seconds...")
 
         time.sleep(delay)
+
+
+def call_llm_text(messages):
+    """
+    Call the LLM without tools and return only text.
+    """
+    message = call_llm(messages)
+    return message.content
