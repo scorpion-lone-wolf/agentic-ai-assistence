@@ -9,11 +9,11 @@ from reflection import run_reflection
 task = """
 Explain dependency injection to a beginner Python developer.
 
-Your answer should:
-- explain why dependency injection exists
-- include one simple example
-- mention one disadvantage
-- stay concise
+Requirements:
+- Explain why dependency injection exists.
+- Include one simple example.
+- Mention one disadvantage.
+- Keep the answer under 250 words.
 """
 
 

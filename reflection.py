@@ -1,4 +1,19 @@
+import json
 from llm import call_llm_text
+
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+MAX_REFLECTION_STEPS = 3
+
+
+class CritiqueResult(BaseModel):
+    status: Literal[
+        "pass", "needs_revision"
+    ]  # cannot be anything else only pass or needs_revision
+
+    feedback: list[str] = Field(default_factory=list)
 
 
 # =====================
@@ -41,7 +56,11 @@ def critique_draft(task: str, draft: str) -> str:
                 "You should check the draft carefully"
                 "You should give feedback on the draft if the draft is not accurate, not clear or not informative"
                 "It should also check if the draft is related to the task"
-                "Do not change the original draft, instead only actionable critiques should be provided"
+                "Do not change the original draft, instead only actionable critiques should be provided if needed"
+                "You should output in the following JSON format"
+                "{{ 'status': 'pass' or 'needs_revision', 'feedback': ['feedback1', 'feedback2', 'feedback3'] }}"
+                "if status is pass then feedback should be empty"
+                "Strictly follow the JSON format(HARD RULE OUTPUT)"
             ),
         },
         {
@@ -49,25 +68,30 @@ def critique_draft(task: str, draft: str) -> str:
             "content": (f"Original Task: \n{task}\n\n" f"Draft: \n{draft}"),
         },
     ]
-    return call_llm_text(message)
+    response = call_llm_text(message)
+    raw_data = json.loads(response)
+
+    return CritiqueResult.model_validate(raw_data)
 
 
 # =====================
 # * Revise (this will apply the critique and generate the final draft)
 # =====================
-def revise_draft(task: str, draft: str, critique: str) -> str:
+def revise_draft(task: str, draft: str, critique: CritiqueResult) -> str:
     """
     This takes actual task , first draft and critique and returns the final draft
     """
+    feedback_text = "\n".join(f"- {item}" for item in critique.feedback)
     messages = [
         {
             "role": "system",
             "content": (
                 "You are a careful editor."
-                "You should change the draft based on critiques."
-                "You should check the draft carefully and apply critiques"
+                "You should change the draft based on Feedback."
+                "You should check the draft carefully and apply Feedback"
                 "as some part are already good and some part are not so good"
-                "So apply the critiques and generate a final result"
+                "So apply the Feedback and generate a revised result"
+                "Output Should be the revised answer"
             ),
         },
         {
@@ -75,7 +99,7 @@ def revise_draft(task: str, draft: str, critique: str) -> str:
             "content": (
                 f"Original Task: \n{task}\n\n"
                 f"Original Draft: \n{draft}\n\n"
-                f"Critique: \n{critique}"
+                f"REVIEW FEEDBACk: \n{feedback_text}"
             ),
         },
     ]
@@ -86,17 +110,25 @@ def revise_draft(task: str, draft: str, critique: str) -> str:
 def run_reflection(task: str) -> str:
     # generate draft
     print("-----------------------Generating draft...")
-    draft = generate_draft(task)
-    print(draft)
+    current_draft = generate_draft(task)
+    print(current_draft)
 
-    # critique draft
-    print("-----------------------Critique draft...")
-    critique = critique_draft(task, draft)
-    print(critique)
+    for reflection_step in range(1, MAX_REFLECTION_STEPS + 1):
+        print(f"\n========== REFLECTION STEP " f"{reflection_step} ==========\n")
 
-    # revise draft
-    print("-----------------------Revision...")
-    final_draft = revise_draft(task, draft, critique)
-    print(final_draft)
+        # critique draft
+        print("-----------------------Critique draft...")
+        critique = critique_draft(task, current_draft)
 
-    return final_draft
+        # check if status is pass
+        if critique.status == "pass":
+            print("\nCritic accepted the answer.")
+            return current_draft
+
+        # revise draft (as it needs revision)
+        print("-----------------------Revision...")
+        current_draft = revise_draft(task, current_draft, critique)
+        print(current_draft)
+
+    print("\nMaximum reflection steps reached. " "Returning latest revision.")
+    return current_draft
