@@ -1,24 +1,16 @@
-# from agent import run_agent_loop
+from grounded_reflection import run_grounded_reflection_loop
+from research import run_research_agent
 
-# result = run_agent_loop("Can you give me latest news on black hole research paper?")
+task = (
+    "Find recent research about reflection in AI agents "
+    "and summarize the main ideas."
+)
 
-# print("LLM says Result : \n", result)
+# do the research and give preliminary answer
+research = run_research_agent(task)
 
-from reflection import run_reflection
+# run grounded reflection loop and revise the preliminary answer
+final_answer = run_grounded_reflection_loop(task, research)
 
-task = """
-Explain dependency injection to a beginner Python developer.
-
-Requirements:
-- Explain why dependency injection exists.
-- Include one simple example.
-- Mention one disadvantage.
-- Keep the answer under 250 words.
-"""
-
-
-result = run_reflection(task)
-
-
-print("\n========== FINAL ANSWER ==========\n")
-print(result)
+print("\n=============== FINAL ANSWER:===============\n")
+print(final_answer)
