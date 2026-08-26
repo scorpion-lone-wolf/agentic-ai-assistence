@@ -1,5 +1,6 @@
+from runtime.tool_executor import execute_tool_call
 from models.research import EvidenceItem
-from agent import execute_tool_call
+
 from tools import tool_schemas
 from llm import call_llm
 from llm import call_llm_text

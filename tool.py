@@ -14,11 +14,13 @@ class Tool:
         description: str,
         function: Callable,
         args_model: Type[BaseModel],
+        requires_approval: bool = False,
     ):
         self.name = name
         self.description = description
         self.function = function
         self.args_model = args_model
+        self.requires_approval = requires_approval
 
     def to_llm_schema(self):
         """
