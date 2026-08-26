@@ -56,8 +56,8 @@ def run_research_agent(task: str) -> ResearchResult:
         assistant_message = call_llm(messages, tools=tool_schemas)
         messages.append(assistant_message)
 
-        # ? does LLM ask for tool call ?
-        if not assistant_message.tool_call:
+        # ? does LLM ask for tool calls?
+        if not assistant_message.tool_calls:
             return ResearchResult(
                 preliminary_answer=assistant_message.content,
                 evidence=evidence,
@@ -70,11 +70,7 @@ def run_research_agent(task: str) -> ResearchResult:
             print("\n Research Tool Result \n")
             print(tool_result)
 
-            arguments = {}
-            try:
-                arguments = json.loads(tool_call.function.arguments)
-            except json.JSONDecodeError as e:
-                pass
+            arguments = tool_call.function.arguments
 
             evidence.append(
                 EvidenceItem(

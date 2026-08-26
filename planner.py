@@ -73,9 +73,3 @@ def create_research_plan(goal: str) -> ResearchPlan:
     data = json.loads(raw_response)
     print(data)
     return ResearchPlan.model_validate(data)
-
-
-query = "What is the best way to learn python?"
-
-plan = create_research_plan(query)
-print(plan)
