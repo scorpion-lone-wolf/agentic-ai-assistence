@@ -1,14 +1,17 @@
+from security import requires_human_approval
 from approval import request_human_approval
 from models.actions import PendingAction
 from tools import tool_registry
 import json
 
 
-def execute_tool_call(tool_call) -> str:
+def execute_tool_call(tool_call, allowed_tools: set[str]) -> str:
     action, error = prepare_tool_call(tool_call)
     if error:
         return error
 
+    if action.tool_name not in allowed_tools:
+        return f"Security policy blocked tool " f"'{action.tool_name}'."
     if action_requires_approval(action):
         return (
             f"Tool '{action.tool_name}' requires "
@@ -92,4 +95,4 @@ def action_requires_approval(pending_action: PendingAction) -> bool:
     tool = tool_registry.get(pending_action.tool_name)
     if not tool:
         return False
-    return tool.requires_approval
+    return requires_human_approval(tool.risk_level)

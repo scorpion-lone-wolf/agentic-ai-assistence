@@ -1,3 +1,4 @@
+from security import RiskLevel
 from tool import Tool
 from pydantic import ConfigDict
 from pydantic import Field
@@ -55,5 +56,5 @@ email_tool = Tool(
     ),
     function=send_email,
     args_model=SendEmailArgs,
-    requires_approval=True,
+    risk_level=RiskLevel.WRITE,
 )

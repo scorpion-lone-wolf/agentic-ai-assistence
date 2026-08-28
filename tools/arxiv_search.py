@@ -1,3 +1,4 @@
+from security import RiskLevel
 from tool import Tool
 from pydantic import Field
 from pydantic import ConfigDict
@@ -57,4 +58,5 @@ arxiv_search_tool = Tool(
     description="Search arxiv for information",
     function=search_arxiv,
     args_model=ArxivSearchArgs,
+    risk_level=RiskLevel.READ,
 )

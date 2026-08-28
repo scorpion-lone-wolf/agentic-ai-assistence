@@ -1,3 +1,4 @@
+from security import RiskLevel
 from tool import Tool
 from pydantic import Field
 from pydantic import ConfigDict
@@ -51,4 +52,5 @@ web_search_tool = Tool(
     description="Search the web for information",
     function=search_web,
     args_model=WebSearchArgs,
+    risk_level=RiskLevel.READ,
 )
