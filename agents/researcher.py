@@ -1,6 +1,7 @@
 from tools import get_tool_schemas
 from runtime.tool_executor import execute_tool_call
 from models.research import EvidenceItem
+from observability import log
 
 from tools import tool_schemas
 from llm import call_llm
@@ -13,7 +14,9 @@ research_schemas = get_tool_schemas(RESEARCH_TOOLS)
 
 
 def run_researcher_agent(
-    question: str, plan: ResearchPlan | None = None
+    question: str,
+    plan: ResearchPlan | None = None,
+    trace_id: str | None = None,
 ) -> list[EvidenceItem]:
     """
     This agent is responsible for collecting evidence for the given question.
@@ -78,6 +81,7 @@ def run_researcher_agent(
                 content=tool_result,
             )
         )
+        log(trace_id, f"Calling {tool_call.function.name}")
         message.append(
             {
                 "role": "tool",
