@@ -33,7 +33,10 @@ def run_multi_agent_workflow(question: str):
     log(trace_id, "Researcher Started...")
     start = now()
 
-    state.evidence = run_researcher_agent(state.user_question, state.plan, trace_id)
+    research_result = run_researcher_agent(state.user_question, state.plan, trace_id)
+
+    print("\n========== RESEARCH RESULT ==========", research_result)
+    state.evidence = research_result.evidence
 
     duration = elapsed_seconds(start)
     log(trace_id, f"Researcher Finished in {duration:.2f}s")

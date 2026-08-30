@@ -1,3 +1,5 @@
+import json
+from models.research import ResearchResult
 from tools import get_tool_schemas
 from runtime.tool_executor import execute_tool_call
 from models.research import EvidenceItem
@@ -8,16 +10,16 @@ from llm import call_llm
 from llm import call_llm_text
 from planner import ResearchPlan
 
-RESEARCH_TOOLS = ["search_web", "search_arxiv"]
+RESEARCHER_ALLOWED_TOOLS = {"arxiv_search", "web_search"}
 
-research_schemas = get_tool_schemas(RESEARCH_TOOLS)
+research_schemas = get_tool_schemas(RESEARCHER_ALLOWED_TOOLS)
 
 
 def run_researcher_agent(
     question: str,
     plan: ResearchPlan | None = None,
     trace_id: str | None = None,
-) -> list[EvidenceItem]:
+) -> ResearchResult:
     """
     This agent is responsible for collecting evidence for the given question.
     It just returns the evidence collected so far.
@@ -55,24 +57,39 @@ def run_researcher_agent(
         },
     ]
     evidences: list[EvidenceItem] = []
+    tool_used = []
+
     assistant_message = call_llm(messages=message, tools=research_schemas)
 
+    print(
+        "\nRESEARCHER RESPONSE:",
+        assistant_message,
+    )
+    print("\nRESEARCH SCHEMAS:")
+    print(research_schemas)
+    print(
+        "\nNUMBER OF RESEARCH TOOLS:",
+        len(research_schemas),
+    )
     message.append(assistant_message)
 
     if not assistant_message.tool_calls:
-        return evidences
-
+        return ResearchResult(
+            evidence=evidences,
+            tool_used=tool_used,
+        )
     for tool_call in assistant_message.tool_calls:
+        # LLM has requested us to call a tool
+        tool_used.append(tool_call.function.name)
 
         tool_result = execute_tool_call(
             tool_call,
-            allowed_tools={
-                "search_web",
-                "search_arxiv",
-            },
+            allowed_tools=RESEARCHER_ALLOWED_TOOLS,
         )
-
-        arguments = tool_call.function.arguments
+        try:
+            arguments = json.loads(tool_call.function.arguments)
+        except json.JSONDecodeError:
+            arguments = {}
 
         evidences.append(
             EvidenceItem(
@@ -89,4 +106,7 @@ def run_researcher_agent(
                 "content": tool_result,
             }
         )
-    return evidences
+    return ResearchResult(
+        evidence=evidences,
+        tool_used=tool_used,
+    )

@@ -10,9 +10,9 @@ tool_registry = {tool.name: tool for tool in ALL_TOOLS}
 tool_schemas = [tool.to_llm_schema() for tool in ALL_TOOLS]
 
 
-def get_tool_schemas(tools: list[str]):
+def get_tool_schemas(tools: set[str]):
     """
-    Given a list of tool names, return the LLM schemas for those tools
+    Given a set of tool names, return the LLM schemas for those tools
     """
     schemas = []
     for tool_name in tools:

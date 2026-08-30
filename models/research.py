@@ -7,6 +7,11 @@ class EvidenceItem(BaseModel):
     content: str
 
 
+class ResearchResult(BaseModel):
+    tool_used: list[str]
+    evidence: list[EvidenceItem]
+
+
 def format_evidence(
     evidence: list[EvidenceItem],
 ) -> str:

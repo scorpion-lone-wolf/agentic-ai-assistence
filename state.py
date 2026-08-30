@@ -1,4 +1,4 @@
-from research import EvidenceItem
+from models.research import EvidenceItem
 from planner import ResearchPlan
 from pydantic import Field
 from typing import Any

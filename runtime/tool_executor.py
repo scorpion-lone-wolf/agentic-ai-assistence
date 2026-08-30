@@ -1,3 +1,4 @@
+from security import is_tool_allowed
 from security import requires_human_approval
 from approval import request_human_approval
 from models.actions import PendingAction
@@ -10,8 +11,9 @@ def execute_tool_call(tool_call, allowed_tools: set[str]) -> str:
     if error:
         return error
 
-    if action.tool_name not in allowed_tools:
+    if not is_tool_allowed(action.tool_name, allowed_tools):
         return f"Security policy blocked tool " f"'{action.tool_name}'."
+
     if action_requires_approval(action):
         return (
             f"Tool '{action.tool_name}' requires "

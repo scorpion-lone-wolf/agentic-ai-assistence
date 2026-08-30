@@ -1,10 +1,11 @@
+from models.research import format_evidence
+from models.research import EvidenceItem
 from llm import call_llm_text
 import json
-from research import format_evidence
+
 from pydantic import Field
 from typing import Literal
 from pydantic import BaseModel
-from research import EvidenceItem
 
 
 class CritiqueResult(BaseModel):
