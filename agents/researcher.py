@@ -61,16 +61,6 @@ def run_researcher_agent(
 
     assistant_message = call_llm(messages=message, tools=research_schemas)
 
-    print(
-        "\nRESEARCHER RESPONSE:",
-        assistant_message,
-    )
-    print("\nRESEARCH SCHEMAS:")
-    print(research_schemas)
-    print(
-        "\nNUMBER OF RESEARCH TOOLS:",
-        len(research_schemas),
-    )
     message.append(assistant_message)
 
     if not assistant_message.tool_calls:
