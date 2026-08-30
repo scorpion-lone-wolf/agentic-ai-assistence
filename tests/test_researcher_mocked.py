@@ -47,3 +47,33 @@ def test_researcher_records_mocked_arxiv_tool(
 
     assert "arxiv_search" in result.tool_used
     assert result.evidence[0].content == "Fake arXiv research result"
+
+
+def fake_failed_tool_call(
+    tool_call,
+    allowed_tools,
+):
+    return "Tool execution failed with some error :  fake error"
+
+
+def test_researcher_store_tool_failure_as_evidence(monkeypatch):
+    # inside the researcher module , replace call_llm with fake_call_llm
+    monkeypatch.setattr(
+        researcher,
+        "call_llm",
+        fake_call_llm,
+    )
+    # same for execute_tool_call
+    monkeypatch.setattr(
+        researcher,
+        "execute_tool_call",
+        fake_failed_tool_call,
+    )
+
+    result = researcher.run_researcher_agent("Find papers about reflection agents.")
+
+    assert len(result.evidence) == 1
+    assert (
+        result.evidence[0].content
+        == "Tool execution failed with some error :  fake error"
+    )

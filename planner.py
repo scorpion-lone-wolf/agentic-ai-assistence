@@ -71,5 +71,4 @@ def create_research_plan(goal: str) -> ResearchPlan:
     raw_response = call_llm_text(messages)
 
     data = json.loads(raw_response)
-    print(data)
     return ResearchPlan.model_validate(data)
