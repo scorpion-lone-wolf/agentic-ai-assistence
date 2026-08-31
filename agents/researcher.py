@@ -14,6 +14,8 @@ RESEARCHER_ALLOWED_TOOLS = {"arxiv_search", "web_search"}
 
 research_schemas = get_tool_schemas(RESEARCHER_ALLOWED_TOOLS)
 
+MAX_RESEARCH_STEPS = 5
+
 
 def run_researcher_agent(
     question: str,
@@ -58,44 +60,45 @@ def run_researcher_agent(
     ]
     evidences: list[EvidenceItem] = []
     tool_used = []
+    for step in range(1, MAX_RESEARCH_STEPS + 1):
+        assistant_message = call_llm(messages=message, tools=research_schemas)
 
-    assistant_message = call_llm(messages=message, tools=research_schemas)
+        message.append(assistant_message)
 
-    message.append(assistant_message)
-
-    if not assistant_message.tool_calls:
-        return ResearchResult(
-            evidence=evidences,
-            tool_used=tool_used,
-        )
-    for tool_call in assistant_message.tool_calls:
-        # LLM has requested us to call a tool
-        tool_used.append(tool_call.function.name)
-
-        tool_result = execute_tool_call(
-            tool_call,
-            allowed_tools=RESEARCHER_ALLOWED_TOOLS,
-        )
-        try:
-            arguments = json.loads(tool_call.function.arguments)
-        except json.JSONDecodeError:
-            arguments = {}
-
-        evidences.append(
-            EvidenceItem(
-                tool_name=tool_call.function.name,
-                tool_arguments=arguments,
-                content=tool_result,
+        if not assistant_message.tool_calls:
+            return ResearchResult(
+                evidence=evidences,
+                tool_used=tool_used,
             )
-        )
-        log(trace_id, f"Calling {tool_call.function.name}")
-        message.append(
-            {
-                "role": "tool",
-                "tool_id": tool_call.id,
-                "content": tool_result,
-            }
-        )
+        for tool_call in assistant_message.tool_calls:
+            # LLM has requested us to call a tool
+            tool_used.append(tool_call.function.name)
+
+            tool_result = execute_tool_call(
+                tool_call,
+                allowed_tools=RESEARCHER_ALLOWED_TOOLS,
+            )
+            try:
+                arguments = json.loads(tool_call.function.arguments)
+            except json.JSONDecodeError:
+                arguments = {}
+
+            evidences.append(
+                EvidenceItem(
+                    tool_name=tool_call.function.name,
+                    tool_arguments=arguments,
+                    content=tool_result,
+                )
+            )
+            log(trace_id, f"Calling {tool_call.function.name}")
+            message.append(
+                {
+                    "role": "tool",
+                    "tool_id": tool_call.id,
+                    "content": tool_result,
+                }
+            )
+
     return ResearchResult(
         evidence=evidences,
         tool_used=tool_used,

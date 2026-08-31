@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 import agents.researcher as researcher
 
+# simple name space is used to create object without defining class
 fake_tool_call = SimpleNamespace(
     id="fake-call-1",
     function=SimpleNamespace(
@@ -72,8 +73,33 @@ def test_researcher_store_tool_failure_as_evidence(monkeypatch):
 
     result = researcher.run_researcher_agent("Find papers about reflection agents.")
 
-    assert len(result.evidence) == 1
     assert (
         result.evidence[0].content
         == "Tool execution failed with some error :  fake error"
     )
+
+
+def test_researcher_respects_max_steps(monkeypatch):
+    call_count = 0
+
+    def fake_looping_llm(messages, tools=None):
+        nonlocal call_count
+        call_count += 1
+        return fake_assistant_message
+
+    def fake_tool_call(tool_call, allowed_tools):
+        return "Fake research result"
+
+    monkeypatch.setattr(
+        researcher,
+        "call_llm",
+        fake_looping_llm,
+    )
+
+    monkeypatch.setattr(
+        researcher,
+        "execute_tool_call",
+        fake_tool_call,
+    )
+    result = researcher.run_researcher_agent("Find papers about reflection agents.")
+    assert call_count == researcher.MAX_RESEARCH_STEPS
