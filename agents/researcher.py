@@ -61,6 +61,11 @@ def run_researcher_agent(
     evidences: list[EvidenceItem] = []
     tool_used = []
     for step in range(1, MAX_RESEARCH_STEPS + 1):
+        print("\n========== MESSAGES SENT TO GEMINI ==========")
+
+        for index, msg in enumerate(message):
+            print(f"\nMESSAGE {index}:")
+            print(msg)
         assistant_message = call_llm(messages=message, tools=research_schemas)
 
         message.append(assistant_message)
@@ -94,7 +99,7 @@ def run_researcher_agent(
             message.append(
                 {
                     "role": "tool",
-                    "tool_id": tool_call.id,
+                    "tool_call_id": tool_call.id,
                     "content": tool_result,
                 }
             )

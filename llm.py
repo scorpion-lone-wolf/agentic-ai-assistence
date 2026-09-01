@@ -29,46 +29,72 @@ def call_llm(messages, tools=None):
     """
     Send messages to Gemini.
 
-    We return the complete assistant message because
-    it may contain either:
-
+    Returns the complete assistant message because it may contain:
     1. normal text
     2. tool calls
     """
+
     for attempt in range(MAX_LLM_RETRY + 1):
+
         try:
             response = client.chat.completions.create(
                 model="gemini-3.1-flash-lite",
                 messages=messages,
                 tools=tools,
             )
+
             return response.choices[0].message
+
         except openai.APITimeoutError as error:
+
             print(f"[LLM Error] : Timeout error: {error}")
+
+            if attempt == MAX_LLM_RETRY:
+                raise
+
             should_retry = True
+
         except openai.RateLimitError as error:
+
             print(f"[LLM Error] : Rate limit error: {error}")
+
+            if attempt == MAX_LLM_RETRY:
+                raise
+
             should_retry = True
+
         except openai.APIConnectionError as error:
+
             print(f"[LLM Error] : Connection error: {error}")
+
+            if attempt == MAX_LLM_RETRY:
+                raise
+
             should_retry = True
+
         except openai.APIStatusError as error:
+
+            print(f"[LLM Error] : API status {error.status_code}: " f"{error}")
+
             if error.status_code >= 500:
+
+                if attempt == MAX_LLM_RETRY:
+                    raise
+
                 should_retry = True
+
             else:
-                should_retry = False
-        # Stop immediately for non-retryable errors
-        if not should_retry:
-            raise
+                # 4xx errors are normally not retryable.
+                raise
 
-        if attempt == MAX_LLM_RETRY:
-            # explicitly raise the error for maximum retry reached
-            raise
-        # exponential backoff
-        delay = INITIAL_RETRY_DELAY * (2**attempt)
-        print(f"[LLM Error] : Retrying after {delay} seconds...")
+        # Only retry when execution reaches this point.
+        if should_retry:
 
-        time.sleep(delay)
+            delay = INITIAL_RETRY_DELAY * (2**attempt)
+
+            print(f"[LLM Error] : " f"Retrying after {delay} seconds...")
+
+            time.sleep(delay)
 
 
 def call_llm_text(messages):
