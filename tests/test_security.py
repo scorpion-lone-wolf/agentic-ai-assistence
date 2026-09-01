@@ -6,7 +6,7 @@ from agents.researcher import RESEARCHER_ALLOWED_TOOLS
 
 def test_researcher_allows_web_search():
     assert is_tool_allowed(
-        "search_web",
+        "web_search",
         RESEARCHER_ALLOWED_TOOLS,
     )
 

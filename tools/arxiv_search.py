@@ -20,7 +20,7 @@ class ArxivSearchArgs(BaseModel):
     )
 
 
-def search_arxiv(query: str, max_results: int = 2):
+def arxiv_search(query: str, max_results: int = 2):
     """
     Search query in arxiv and return the top 2 max_results
     """
@@ -56,7 +56,7 @@ def search_arxiv(query: str, max_results: int = 2):
 arxiv_search_tool = Tool(
     name="arxiv_search",
     description="Search arxiv for information",
-    function=search_arxiv,
+    function=arxiv_search,
     args_model=ArxivSearchArgs,
     risk_level=RiskLevel.READ,
 )

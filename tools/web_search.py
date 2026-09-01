@@ -20,7 +20,7 @@ class WebSearchArgs(BaseModel):
     )
 
 
-def search_web(query: str, max_results: int = 2):
+def web_search(query: str, max_results: int = 2):
     """
     Search the web for the given query and return the top max_results
     It returns a list of array of results and each result contains
@@ -50,7 +50,7 @@ def search_web(query: str, max_results: int = 2):
 web_search_tool = Tool(
     name="web_search",
     description="Search the web for information",
-    function=search_web,
+    function=web_search,
     args_model=WebSearchArgs,
     risk_level=RiskLevel.READ,
 )

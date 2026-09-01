@@ -9,8 +9,8 @@ from datetime import datetime
 class ResearchStep(BaseModel):
     # which tool to use
     tool: Literal[
-        "search_arxiv",
-        "search_web",
+        "arxiv_search",
+        "web_search",
     ]
     # what query to pass to the tool
     query: str = Field(
@@ -46,8 +46,8 @@ def create_research_plan(goal: str) -> ResearchPlan:
                 "You have a access to the tools , so you can add to the plan if needed"
                 "You should only write the plan and nothing else"
                 "Available Tools :- \n"
-                "- search_arxiv: academic papers and scholarly research\n"
-                "- search_web: recent/current general web information\n\n"
+                "- arxiv_search: academic papers and scholarly research\n"
+                "- web_search: recent/current general web information\n\n"
                 "Return ONLY valid JSON in this format:\n"
                 """
                     {

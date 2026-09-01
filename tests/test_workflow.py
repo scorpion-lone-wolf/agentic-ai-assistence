@@ -18,7 +18,7 @@ def test_complete_workflow(monkeypatch):
         goal="Test Research goal",
         steps=[
             ResearchStep(
-                tool="search_web",
+                tool="web_search",
                 query="Test query",
                 reason="Test reason",
             )
@@ -30,7 +30,7 @@ def test_complete_workflow(monkeypatch):
     # ---------------------------------
     fake_evidence = [
         EvidenceItem(
-            tool_name="search_web",
+            tool_name="web_search",
             tool_arguments={"query": "test query"},
             content="Test research evidence.",
         )
