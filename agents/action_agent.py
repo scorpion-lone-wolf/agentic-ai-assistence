@@ -1,11 +1,14 @@
+from tools import get_tool_schemas
 from approval import request_human_approval
 from runtime.tool_executor import execute_prepared_tool
 from runtime.tool_executor import action_requires_approval
 from runtime.tool_executor import prepare_tool_call
-from tools import tool_schemas
 from llm import call_llm
 
 MAX_ACTION_STEPS = 5
+
+ALLOWED_TOOLS = {"arxiv_search", "web_search"}
+action_tool_schemas = get_tool_schemas(ALLOWED_TOOLS)
 
 
 def run_action_agent(request: str):
@@ -31,7 +34,7 @@ def run_action_agent(request: str):
         print("\n ========== ACTION step - " + str(step) + " ==========")
         assistant_message = call_llm(
             messages=messages,
-            tools=tool_schemas,
+            tools=action_tool_schemas,
         )
 
         messages.append(assistant_message)
