@@ -4,6 +4,7 @@ from pydantic import Field
 from pydantic import ConfigDict
 from pydantic import BaseModel
 from ddgs import DDGS
+import asyncio
 
 
 class WebSearchArgs(BaseModel):
@@ -20,7 +21,8 @@ class WebSearchArgs(BaseModel):
     )
 
 
-def web_search(query: str, max_results: int = 2):
+# this is synchronous web search
+def web_search(query: str, max_results: int = 2) -> str:
     """
     Search the web for the given query and return the top max_results
     It returns a list of array of results and each result contains
@@ -45,6 +47,12 @@ def web_search(query: str, max_results: int = 2):
         return "No web search results found."
 
     return "\n\n".join(formatted_results)
+
+
+async def web_search_async(query: str, max_results: int = 2) -> str:
+    # since web_search is synchronous, we need to use asyncio.to_thread to tell it to run in a separate thread
+    # to_thead make the synchronous function awaitable
+    return await asyncio.to_thread(web_search, query, max_results)
 
 
 web_search_tool = Tool(

@@ -1,3 +1,4 @@
+import asyncio
 from security import RiskLevel
 from tool import Tool
 from pydantic import Field
@@ -20,7 +21,7 @@ class ArxivSearchArgs(BaseModel):
     )
 
 
-def arxiv_search(query: str, max_results: int = 2):
+def arxiv_search(query: str, max_results: int = 2) -> str:
     """
     Search query in arxiv and return the top 2 max_results
     """
@@ -51,6 +52,12 @@ def arxiv_search(query: str, max_results: int = 2):
         return "No arxiv search results found."
 
     return "\n\n".join(papers)
+
+
+async def arxiv_search_async(query: str, max_results: int = 2) -> str:
+    # since arxiv_search is synchronous, we need to use asyncio.to_thread to tell it to run in a separate thread
+    # to_thead make the synchronous function awaitable
+    return await asyncio.to_thread(arxiv_search, query, max_results)
 
 
 arxiv_search_tool = Tool(
