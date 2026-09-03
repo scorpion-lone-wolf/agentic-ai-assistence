@@ -93,6 +93,27 @@ def execute_prepared_tool(pending_action: PendingAction) -> str:
     return str(result)
 
 
+async def execute_prepared_tool_async(pending_action: PendingAction):
+
+    tool = tool_registry.get(pending_action.tool_name)
+
+    if tool is None:
+        return f"Unknown tool '{pending_action.tool_name}'."
+    try:
+
+        if tool.is_async:
+            result = await tool.function(**pending_action.tool_arguments)
+        else:
+            result = tool.function(**pending_action.tool_arguments)
+
+    except Exception as error:
+        return (
+            f"Tool '{pending_action.tool_name}' failed with "
+            f"{type(error).__name__}: {error}"
+        )
+    return str(result)
+
+
 def action_requires_approval(pending_action: PendingAction) -> bool:
     tool = tool_registry.get(pending_action.tool_name)
     if not tool:
