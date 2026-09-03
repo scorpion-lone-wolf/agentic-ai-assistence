@@ -63,9 +63,6 @@ def run_researcher_agent(
     for step in range(1, MAX_RESEARCH_STEPS + 1):
         print("\n========== MESSAGES SENT TO GEMINI ==========")
 
-        for index, msg in enumerate(message):
-            print(f"\nMESSAGE {index}:")
-            print(msg)
         assistant_message = call_llm(messages=message, tools=research_schemas)
 
         message.append(assistant_message)
@@ -75,6 +72,7 @@ def run_researcher_agent(
                 evidence=evidences,
                 tool_used=tool_used,
             )
+        # we are looping over the tool calls and calling each tool sequentially
         for tool_call in assistant_message.tool_calls:
             # LLM has requested us to call a tool
             tool_used.append(tool_call.function.name)
