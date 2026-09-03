@@ -2,6 +2,7 @@ from security import RiskLevel
 from pydantic import BaseModel
 from typing import Type
 from typing import Callable
+import inspect
 
 
 class Tool:
@@ -22,6 +23,7 @@ class Tool:
         self.function = function
         self.args_model = args_model
         self.risk_level = risk_level
+        self.is_async = inspect.iscoroutinefunction(function)
 
     def to_llm_schema(self):
         """
