@@ -29,3 +29,8 @@ def is_tool_allowed(
     allowed_tools: set[str],
 ) -> bool:
     return tool_name in allowed_tools
+
+
+# currently only read tools can be run in parallel
+def can_run_in_parallel(risk_level: RiskLevel) -> bool:
+    return risk_level in {RiskLevel.READ}

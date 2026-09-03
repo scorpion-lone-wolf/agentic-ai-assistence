@@ -1,3 +1,4 @@
+from security import can_run_in_parallel
 from security import RiskLevel
 from security import requires_human_approval
 from security import is_tool_allowed
@@ -28,3 +29,19 @@ def test_write_tool_requires_approval():
 
 def test_destructive_tool_requires_approval():
     assert requires_human_approval(RiskLevel.DESTRUCTIVE)
+
+
+def test_read_tools_can_only_run_parallel():
+    risk_level = RiskLevel.READ
+    assert can_run_in_parallel(risk_level) is True
+
+
+def test_write_tools_cannot_run_in_parallel():
+    risk_level = RiskLevel.WRITE
+    assert can_run_in_parallel(risk_level) is False
+
+
+def test_destructive_tools_cannot_run_in_parallel():
+    risk_level = RiskLevel.DESTRUCTIVE
+
+    assert can_run_in_parallel(risk_level) is False
