@@ -1,3 +1,4 @@
+from security import RiskLevel
 import asyncio
 from types import SimpleNamespace
 
@@ -31,6 +32,7 @@ sync_tool = Tool(
     description="Test sync tool",
     function=sync_tool_function,
     args_model=FakeToolArgs,
+    risk_level=RiskLevel.READ,
 )
 
 
@@ -39,6 +41,14 @@ async_tool = Tool(
     description="Test async tool",
     function=async_tool_function,
     args_model=FakeToolArgs,
+)
+
+parallel_test_tool = Tool(
+    name="parallel_test",
+    description="Test parallel eligibility",
+    function=sync_tool_function,
+    args_model=FakeToolArgs,
+    risk_level=RiskLevel.READ,
 )
 
 
@@ -92,3 +102,25 @@ async def test_async_executor_runs_sync_tool(
     result = await tool_executor.execute_prepared_tool_async(action)
 
     assert result == "sync: hello"
+
+
+def test_read_action_can_run_in_parallel(monkeypatch):
+    monkeypatch.setattr(
+        tool_executor,
+        "tool_registry",
+        {
+            "parallel_test": parallel_test_tool,
+        },
+    )
+
+    action = PendingAction(
+        tool_name="parallel_test",
+        tool_arguments={
+            "text": "hello",
+        },
+        tool_id="test-parallel-1",
+    )
+
+    result = tool_executor.action_can_run_in_parallel(action)
+
+    assert result is True

@@ -1,3 +1,4 @@
+from security import can_run_in_parallel
 from security import is_tool_allowed
 from security import requires_human_approval
 from approval import request_human_approval
@@ -119,3 +120,10 @@ def action_requires_approval(pending_action: PendingAction) -> bool:
     if not tool:
         return False
     return requires_human_approval(tool.risk_level)
+
+
+def action_can_run_in_parallel(pending_action: PendingAction) -> bool:
+    tool = tool_registry.get(pending_action.tool_name)
+    if not tool:
+        return False
+    return can_run_in_parallel(tool.risk_level)
