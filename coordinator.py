@@ -5,11 +5,12 @@ from agents.writer import run_writer_agent
 from agents.critic import run_critic_agent
 from planner import create_research_plan
 from state import AgentState
+import asyncio
 
 MAX_CRITIQUE_STEPS = 5
 
 
-def run_multi_agent_workflow(question: str):
+async def run_multi_agent_workflow(question: str):
     """
     Coordinates Planner, Researcher, Writer and Critic agents
     """
@@ -33,7 +34,9 @@ def run_multi_agent_workflow(question: str):
     log(trace_id, "Researcher Started...")
     start = now()
 
-    research_result = run_researcher_agent(state.user_question, state.plan, trace_id)
+    research_result = await run_researcher_agent(
+        state.user_question, state.plan, trace_id
+    )
 
     print("\n========== RESEARCH RESULT ==========", research_result)
     state.evidence = research_result.evidence
