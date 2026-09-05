@@ -1,8 +1,10 @@
 from agents.researcher import run_researcher_agent
+import pytest
 
 
-def test_researcher_uses_arxiv_for_academic_query():
-    result = run_researcher_agent(
+@pytest.mark.anyio
+async def test_researcher_uses_arxiv_for_academic_query():
+    result = await run_researcher_agent(
         "Find recent research paper on reflection in AI agents",
     )
     print(result)

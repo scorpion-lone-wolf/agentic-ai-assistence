@@ -1,5 +1,6 @@
 # here we are testing the whole workflow, not the individual span
 
+import pytest
 from agents.critic import CritiqueResult
 from models.research import EvidenceItem
 from models.research import ResearchResult
@@ -9,7 +10,8 @@ from coordinator import run_multi_agent_workflow
 import coordinator
 
 
-def test_complete_workflow(monkeypatch):
+@pytest.mark.anyio
+async def test_complete_workflow(monkeypatch):
 
     # ---------------------------------
     #  fake the planner
@@ -37,6 +39,9 @@ def test_complete_workflow(monkeypatch):
     ]
     fake_research_result = ResearchResult(tool_used=[], evidence=fake_evidence)
 
+    async def fake_run_researcher_agent(question, plan, trace_id):
+        return fake_research_result
+
     # ---------------------------------
     #  fake the writer
     # ---------------------------------
@@ -61,7 +66,7 @@ def test_complete_workflow(monkeypatch):
     monkeypatch.setattr(
         coordinator,
         "run_researcher_agent",
-        lambda question, plan, trace_id: fake_research_result,
+        fake_run_researcher_agent,
     )
 
     monkeypatch.setattr(
@@ -79,7 +84,7 @@ def test_complete_workflow(monkeypatch):
     # Run complete workflow
     # ---------------------------------------------
 
-    state = run_multi_agent_workflow("Test question")
+    state = await run_multi_agent_workflow("Test question")
 
     # ---------------------------------------------
     # Verify final state

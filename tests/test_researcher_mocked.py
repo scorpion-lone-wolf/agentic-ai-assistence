@@ -1,3 +1,5 @@
+from models.actions import PendingAction
+import pytest
 from types import SimpleNamespace
 import agents.researcher as researcher
 
@@ -22,14 +24,12 @@ def fake_call_llm(messages, tools=None):
     return fake_assistant_message
 
 
-def fake_execute_tool_call(
-    tool_call,
-    allowed_tools,
-):
+async def fake_execute_tool_call(action: PendingAction):
     return "Fake arXiv research result"
 
 
-def test_researcher_records_mocked_arxiv_tool(
+@pytest.mark.anyio
+async def test_researcher_records_mocked_arxiv_tool(
     monkeypatch,
 ):
     # inside the researcher module , replace call_llm with fake_call_llm
@@ -41,23 +41,23 @@ def test_researcher_records_mocked_arxiv_tool(
     # same for execute_tool_call
     monkeypatch.setattr(
         researcher,
-        "execute_tool_call",
+        "execute_prepared_tool_async",
         fake_execute_tool_call,
     )
-    result = researcher.run_researcher_agent("Find papers about reflection agents.")
+    result = await researcher.run_researcher_agent(
+        "Find papers about reflection agents."
+    )
 
     assert "arxiv_search" in result.tool_used
     assert result.evidence[0].content == "Fake arXiv research result"
 
 
-def fake_failed_tool_call(
-    tool_call,
-    allowed_tools,
-):
+async def fake_failed_tool_call(action: PendingAction):
     return "Tool execution failed with some error :  fake error"
 
 
-def test_researcher_store_tool_failure_as_evidence(monkeypatch):
+@pytest.mark.anyio
+async def test_researcher_store_tool_failure_as_evidence(monkeypatch):
     # inside the researcher module , replace call_llm with fake_call_llm
     monkeypatch.setattr(
         researcher,
@@ -67,11 +67,13 @@ def test_researcher_store_tool_failure_as_evidence(monkeypatch):
     # same for execute_tool_call
     monkeypatch.setattr(
         researcher,
-        "execute_tool_call",
+        "execute_prepared_tool_async",
         fake_failed_tool_call,
     )
 
-    result = researcher.run_researcher_agent("Find papers about reflection agents.")
+    result = await researcher.run_researcher_agent(
+        "Find papers about reflection agents."
+    )
 
     assert (
         result.evidence[0].content
@@ -79,7 +81,8 @@ def test_researcher_store_tool_failure_as_evidence(monkeypatch):
     )
 
 
-def test_researcher_respects_max_steps(monkeypatch):
+@pytest.mark.anyio
+async def test_researcher_respects_max_steps(monkeypatch):
     call_count = 0
 
     def fake_looping_llm(messages, tools=None):
@@ -87,7 +90,7 @@ def test_researcher_respects_max_steps(monkeypatch):
         call_count += 1
         return fake_assistant_message
 
-    def fake_tool_call(tool_call, allowed_tools):
+    def fake_tool_call(action: PendingAction):
         return "Fake research result"
 
     monkeypatch.setattr(
@@ -101,5 +104,7 @@ def test_researcher_respects_max_steps(monkeypatch):
         "execute_tool_call",
         fake_tool_call,
     )
-    result = researcher.run_researcher_agent("Find papers about reflection agents.")
+    result = await researcher.run_researcher_agent(
+        "Find papers about reflection agents."
+    )
     assert call_count == researcher.MAX_RESEARCH_STEPS
