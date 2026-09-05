@@ -1,3 +1,4 @@
+import asyncio
 from coordinator import run_multi_agent_workflow
 
 question = """
@@ -7,7 +8,7 @@ practical implementations.
 """
 
 
-state = run_multi_agent_workflow(question)
+state = asyncio.run(run_multi_agent_workflow("your question"))
 
 
 print("\n========== FINAL ANSWER ==========\n")

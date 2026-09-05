@@ -47,6 +47,7 @@ def prepare_tool_call(tool_call):
 
     if tool is None:
         tool_result = f"Unknown tool: {function_name}"
+        return None, tool_result
 
     tool_function = tool.function
     args_model = tool.args_model  # this is the validation model for arguments

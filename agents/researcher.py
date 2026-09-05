@@ -89,8 +89,18 @@ async def run_researcher_agent(
             action, error = prepare_tool_call(tool_call)
             if error:
                 preparation_error.append((tool_call, error))
-            else:
-                prepared_actions.append(action)
+                continue
+
+            if not is_tool_allowed(action.tool_name, RESEARCHER_ALLOWED_TOOLS):
+                preparation_error.append(
+                    (
+                        tool_call,
+                        f"Security policy blocked tool '{action.tool_name}'.",
+                    )
+                )
+                continue
+
+            prepared_actions.append(action)
 
         # ---------------------------------------------------------
         # PHASE 2: CLASSIFY PREPARED ACTIONS (whether it is sequential or parallel)
