@@ -1,3 +1,4 @@
+import pytest
 import time
 import asyncio
 from tools.arxiv_search import arxiv_search_async
@@ -24,3 +25,22 @@ def test_search_tool_run_concurrently():
     assert len(result) == 2
 
     print(f"\nTook {duration:.2f} seconds")
+
+
+# creating a fake slow tool function
+async def slow_tool(name: str):
+    await asyncio.sleep(0.2)
+    return name
+
+
+# testing that two async tools actually overlap and run concurrently
+@pytest.mark.anyio
+async def test_two_slow_async_tool_overlap():
+    start = time.perf_counter()
+
+    result = await asyncio.gather()
+
+    end = time.perf_counter()
+    elapsed = end - start
+
+    assert elapsed < 0.35

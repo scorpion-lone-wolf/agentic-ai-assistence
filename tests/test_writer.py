@@ -17,7 +17,7 @@ def test_writer_removes_unsupported_claims():
     current_answer = "Reflection improves agent accuracy by exactly 40%."
     question = "Does reflection improve agent accuracy?"
     feedback = [
-        "The exact '40%' improvement is not supported by the supplied evidence. This need to be re-evaluated."
+        f"The exact 40% improvement is not supported by the supplied evidence. This need to be re-evaluated and should not be included in the final answer."
     ]
 
     revised_answer = run_writer_agent(
