@@ -5,6 +5,10 @@ from approval import request_human_approval
 from models.actions import PendingAction
 from tools import tool_registry
 import json
+import asyncio
+
+MAX_CONCURRENT_TOOLS = 3
+tool_semaphore = asyncio.Semaphore(MAX_CONCURRENT_TOOLS)
 
 
 def execute_tool_call(tool_call, allowed_tools: set[str]) -> str:
@@ -102,11 +106,11 @@ async def execute_prepared_tool_async(pending_action: PendingAction):
     if tool is None:
         return f"Unknown tool '{pending_action.tool_name}'."
     try:
-
-        if tool.is_async:
-            result = await tool.function(**pending_action.tool_arguments)
-        else:
-            result = tool.function(**pending_action.tool_arguments)
+        async with tool_semaphore:
+            if tool.is_async:
+                result = await tool.function(**pending_action.tool_arguments)
+            else:
+                result = tool.function(**pending_action.tool_arguments)
 
     except Exception as error:
         return (

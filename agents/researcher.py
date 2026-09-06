@@ -136,7 +136,6 @@ async def run_researcher_agent(
             )
 
         # parallel executions
-
         parallel_results = await asyncio.gather(
             *[execute_prepared_tool_async(action) for action in parallel_actions]
         )
