@@ -166,3 +166,37 @@ async def test_researcher_stores_parallel_results_with_correct_tools(monkeypatch
 
     assert result.evidence[1].tool_name == "arxiv_search"
     assert result.evidence[1].content == "Arxiv result"
+
+
+@pytest.mark.anyio
+async def test_researcher_keeps_tool_call_id(monkeypatch):
+    captured_messages = []
+
+    def fake_call_llm(messages, tools=None):
+        captured_messages.extend(messages)
+        return fake_assistant_message
+
+    async def fake_execute_tool_call(action: PendingAction):
+        return "Fake arXiv research result"
+
+    monkeypatch.setattr(
+        researcher,
+        "call_llm",
+        fake_call_llm,
+    )
+
+    monkeypatch.setattr(
+        researcher,
+        "execute_prepared_tool_async",
+        fake_execute_tool_call,
+    )
+
+    await researcher.run_researcher_agent("Find papers about reflection agents.")
+
+    tool_messages = [
+        message
+        for message in captured_messages
+        if isinstance(message, dict) and message.get("role") == "tool"
+    ]
+
+    assert tool_messages[0]["tool_call_id"] == "fake-call-1"
