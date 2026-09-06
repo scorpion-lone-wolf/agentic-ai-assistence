@@ -108,3 +108,61 @@ async def test_researcher_respects_max_steps(monkeypatch):
         "Find papers about reflection agents."
     )
     assert call_count == researcher.MAX_RESEARCH_STEPS
+
+
+@pytest.mark.anyio
+async def test_researcher_stores_parallel_results_with_correct_tools(monkeypatch):
+    web_tool_call = SimpleNamespace(
+        id="web-call-1",
+        function=SimpleNamespace(
+            type="function",
+            name="web_search",
+            arguments='{"query": "AI agents"}',
+        ),
+    )
+
+    arxiv_tool_call = SimpleNamespace(
+        id="arxiv-call-1",
+        function=SimpleNamespace(
+            type="function",
+            name="arxiv_search",
+            arguments='{"query": "AI agents"}',
+        ),
+    )
+
+    assistant_message = SimpleNamespace(
+        content=None,
+        tool_calls=[web_tool_call, arxiv_tool_call],
+    )
+
+    def fake_call_llm(messages, tools=None):
+        return assistant_message
+
+    async def fake_execute_tool_call(action: PendingAction):
+        if action.tool_name == "web_search":
+            return "Web result"
+
+        if action.tool_name == "arxiv_search":
+            return "Arxiv result"
+
+        return "Unknown result"
+
+    monkeypatch.setattr(
+        researcher,
+        "call_llm",
+        fake_call_llm,
+    )
+
+    monkeypatch.setattr(
+        researcher,
+        "execute_prepared_tool_async",
+        fake_execute_tool_call,
+    )
+
+    result = await researcher.run_researcher_agent("Find information about AI agents.")
+
+    assert result.evidence[0].tool_name == "web_search"
+    assert result.evidence[0].content == "Web result"
+
+    assert result.evidence[1].tool_name == "arxiv_search"
+    assert result.evidence[1].content == "Arxiv result"
