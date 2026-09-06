@@ -108,7 +108,9 @@ async def execute_prepared_tool_async(pending_action: PendingAction):
     try:
         async with tool_semaphore:
             if tool.is_async:
-                result = await tool.function(**pending_action.tool_arguments)
+                result = await asyncio.wait_for(
+                    tool.function(**pending_action.tool_arguments), timeout=1.0
+                )
             else:
                 result = tool.function(**pending_action.tool_arguments)
 
